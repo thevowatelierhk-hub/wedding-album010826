@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>婚禮相簿 · Wedding Album</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #faf7f2;
+      --warm-white: #fff9f4;
+      --gold: #c9a96e;
+      --gold-light: #e8d5b0;
+      --dark: #1a1410;
+      --mid: #6b5e52;
+      --border: rgba(201,169,110,0.25);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--cream);
+      color: var(--dark);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(ellipse at 20% 10%, rgba(201,169,110,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 90%, rgba(201,169,110,0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 60px 20px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-ornament {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.1;
+      color: var(--dark);
+      margin-bottom: 12px;
+    }
+    header p {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: var(--mid);
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.8;
+    }
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 50px 20px 80px;
+    }
+    .upload-section {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 48px 40px;
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+    }
+    .upload-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .upload-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .upload-section h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.9rem;
+      font-weight: 300;
+      margin-bottom: 12px;
+    }
+    .upload-section p {
+      font-size: 12px;
+      color: var(--mid);
+      letter-spacing: 0.06em;
+      line-height: 1.9;
+      margin-bottom: 36px;
+    }
+    .drop-zone {
+      border: 1px dashed var(--gold-light);
+      border-radius: 2px;
+      padding: 48px 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      background: rgba(201,169,110,0.02);
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--gold);
+      background: rgba(201,169,110,0.06);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-icon { font-size: 2rem; margin-bottom: 16px; display: block; opacity: 0.5; }
+    .drop-zone p { font-size: 12px; color: var(--mid); margin-bottom: 6px; letter-spacing: 0.08em; }
+    .drop-zone span { font-size: 11px; color: var(--gold); letter-spacing: 0.1em; }
+    #preview-container { display: none; flex-wrap: wrap; gap: 10px; margin-top: 24px; justify-content: center; }
+    .preview-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 1px; border: 1px solid var(--border); }
+    .btn-upload {
+      display: none;
+      margin: 28px auto 0;
+      padding: 14px 48px;
+      background: var(--dark);
+      color: var(--gold-light);
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-upload:hover { background: var(--gold); color: var(--dark); }
+    .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
+    #progress-wrap { display: none; margin-top: 24px; }
+    .progress-bar-track { background: var(--border); border-radius: 99px; height: 2px; overflow: hidden; margin-bottom: 12px; }
+    .progress-bar-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.3s ease; }
+    #progress-text { font-size: 11px; color: var(--mid); letter-spacing: 0.1em; }
+    #success-msg { display: none; margin-top: 24px; padding: 16px 24px; background: rgba(201,169,110,0.08); border: 1px solid var(--border); border-radius: 2px; }
+    #success-msg p { font-size: 12px; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0; }
+    .gallery-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; text-align: center; margin-bottom: 8px; }
+    .gallery-section > p { text-align: center; font-size: 11px; color: var(--mid); letter-spacing: 0.12em; margin-bottom: 36px; }
+    #gallery-grid { columns: 3; column-gap: 12px; }
+    @media (max-width: 640px) { #gallery-grid { columns: 2; } .upload-section { padding: 32px 20px; } }
+    .gallery-item { break-inside: avoid; margin-bottom: 12px; overflow: hidden; border-radius: 1px; border: 1px solid var(--border); opacity: 0; transform: translateY(10px); animation: fadeUp 0.5s ease forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .gallery-item img { width: 100%; display: block; transition: transform 0.4s ease; }
+    .gallery-item:hover img { transform: scale(1.03); }
+    #gallery-loading { text-align: center; padding: 40px; font-size: 11px; color: var(--mid); letter-spacing: 0.15em; }
+    .spinner { width: 24px; height: 24px; border: 1px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    footer { position: relative; z-index: 1; text-align: center; padding: 30px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--gold); letter-spacing: 0.2em; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="header-ornament">— Wedding Album —</span>
+    <h1>Share Your Moments</h1>
+    <p>Upload your photos to our shared album<br>分享你喺今日拍嘅珍貴相片</p>
+  </header>
+  <main>
+    <div class="upload-section">
+      <span class="upload-label">Upload Photos · 上載相片</span>
+      <h2>Add Your Photos</h2>
+      <p>Select photos from your device to add to our wedding album.<br>支援 JPG, PNG, HEIC · 每次最多 20 張</p>
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" multiple />
+        <span class="drop-icon">✦</span>
+        <p>撳呢度揀相 · Click to select photos</p>
+        <span>or drag and drop</span>
+      </div>
+      <div id="preview-container"></div>
+      <button class="btn-upload" id="btn-upload">Upload · 上載</button>
+      <div id="progress-wrap">
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+        <p id="progress-text">Uploading…</p>
+      </div>
+      <div id="success-msg"><p>✓ &nbsp;Photos uploaded successfully · 上載成功</p></div>
+    </div>
+    <div class="gallery-section">
+      <h2>Our Album · 我們的相簿</h2>
+      <p>Photos shared by all guests · 所有賓客上載的相片</p>
+      <div id="gallery-loading"><div class="spinner"></div>Loading photos…</div>
+      <div id="gallery-grid"></div>
+    </div>
+  </main>
+  <footer>✦ &nbsp; With love &nbsp; ✦</footer>
+  <script>
+    const CONFIG = {
+      CLIENT_ID: '189987214737-4p472hajbvnnmqrt95gm4v259oklgvfq.apps.googleusercontent.com',
+      ALBUM_ID: 'AF1QipPBDLfRbK73j-S11GzXEoQINbuzHYuuPdeGzW4w9p8nN-xpv2XYEoA30ghbpDg38w?key=Y21HaVN1MmNpS1h5UEwybkdDc3Ezc1FhenBsZHBB',
+    };
+    const SCOPES = [
+      'https://www.googleapis.com/auth/photoslibrary.appendonly',
+      'https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata'
+    ].join(' ');
+    let accessToken = null;
+    let selectedFiles = [];
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const previewContainer = document.getElementById('preview-container');
+    const btnUpload = document.getElementById('btn-upload');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const successMsg = document.getElementById('success-msg');
+    const galleryGrid = document.getElementById('gallery-grid');
+    const galleryLoading = document.getElementById('gallery-loading');
+    function initAuth() {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: CONFIG.CLIENT_ID,
+        scope: SCOPES,
+        callback: (response) => {
+          if (response.error) return;
+          accessToken = response.access_token;
+          loadGallery();
+        },
+      });
+      client.requestAccessToken({ prompt: '' });
+      window._oauthClient = client;
+    }
+    fileInput.addEventListener('change', handleFiles);
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('drag-over'); });
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files.length) handleFiles({ target: { files: e.dataTransfer.files } }); });
+    function handleFiles(e) {
+      selectedFiles = Array.from(e.target.files).slice(0, 20);
+      if (!selectedFiles.length) return;
+      previewContainer.style.display = 'flex';
+      previewContainer.innerHTML = '';
+      selectedFiles.forEach(file => {
+        const img = document.createElement('img');
+        img.className = 'preview-thumb';
+        img.src = URL.createObjectURL(file);
+        previewContainer.appendChild(img);
+      });
+      btnUpload.style.display = 'block';
+      successMsg.style.display = 'none';
+    }
+    btnUpload.addEventListener('click', async () => {
+      if (!selectedFiles.length) return;
+      if (!accessToken) { window._oauthClient.requestAccessToken({ prompt: 'consent' }); return; }
+      btnUpload.disabled = true;
+      progressWrap.style.display = 'block';
+      successMsg.style.display = 'none';
+      const total = selectedFiles.length;
+      let done = 0;
+      for (const file of selectedFiles) {
+        try {
+          const uploadToken = await uploadBytes(file);
+          await addToAlbum(uploadToken, file.name);
+          done++;
+          const pct = Math.round((done / total) * 100);
+          progressFill.style.width = pct + '%';
+          progressText.textContent = `Uploading ${done} / ${total}…`;
+        } catch (err) { console.error('Upload failed:', err); }
+      }
+      progressWrap.style.display = 'none';
+      btnUpload.disabled = false;
+      btnUpload.style.display = 'none';
+      previewContainer.style.display = 'none';
+      selectedFiles = [];
+      successMsg.style.display = 'block';
+      setTimeout(loadGallery, 1500);
+    });
+    async function uploadBytes(file) {
+      const res = await fetch('https://photoslibrary.googleapis.com/v1/uploads', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-type': 'application/octet-stream', 'X-Goog-Upload-Content-Type': file.type, 'X-Goog-Upload-Protocol': 'raw' },
+        body: file,
+      });
+      if (!res.ok) throw new Error('Upload failed: ' + res.status);
+      return await res.text();
+    }
+    async function addToAlbum(uploadToken, filename) {
+      const res = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ albumId: CONFIG.ALBUM_ID, newMediaItems: [{ description: '', simpleMediaItem: { fileName: filename, uploadToken: uploadToken } }] }),
+      });
+      if (!res.ok) throw new Error('batchCreate failed: ' + res.status);
+      return await res.json();
+    }
+    async function loadGallery() {
+      if (!accessToken) return;
+      galleryLoading.style.display = 'block';
+      galleryGrid.innerHTML = '';
+      try {
+        const res = await fetch('https://photoslibrary.googleapis.com/v1/mediaItems:search', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ albumId: CONFIG.ALBUM_ID, pageSize: 100 }),
+        });
+        const data = await res.json();
+        galleryLoading.style.display = 'none';
+        if (!data.mediaItems || data.mediaItems.length === 0) {
+          galleryGrid.innerHTML = '<p style="text-align:center;font-size:12px;color:var(--mid);letter-spacing:0.1em;">Be the first to add a photo · 成為第一個上載相片的人</p>';
+          return;
+        }
+        data.mediaItems.forEach((item, i) => {
+          const div = document.createElement('div');
+          div.className = 'gallery-item';
+          div.style.animationDelay = (i * 0.05) + 's';
+          const img = document.createElement('img');
+          img.src = item.baseUrl + '=w600';
+          img.alt = item.filename || 'Wedding photo';
+          img.loading = 'lazy';
+          div.appendChild(img);
+          galleryGrid.appendChild(div);
+        });
+      } catch (err) {
+        galleryLoading.innerHTML = '<p style="font-size:12px;color:var(--mid);">Unable to load photos</p>';
+      }
+    }
+    window.onload = () => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.onload = initAuth;
+      document.head.appendChild(script);
+    };
+  </script>
+</body>
+</html>
